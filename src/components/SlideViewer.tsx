@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Download, ChevronUp, ChevronDown } from "lucide-react";
+import { Download, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { slides } from "@/data/slides";
 import SlideRenderer from "./SlideRenderer";
 
@@ -50,10 +50,10 @@ export default function SlideViewer() {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
+      if (e.key === "ArrowRight" || e.key === "PageDown") {
         e.preventDefault();
         scrollTo(current + 1);
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
         e.preventDefault();
         scrollTo(current - 1);
       }
@@ -62,8 +62,47 @@ export default function SlideViewer() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [current, scrollTo]);
 
-  const handleDownload = () => {
-    window.print();
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas-pro"),
+        import("jspdf"),
+      ]);
+
+      const slideEls = containerRef.current?.querySelectorAll(".slide-page");
+      if (!slideEls || slideEls.length === 0) return;
+
+      // Use first slide to determine aspect ratio
+      const firstEl = slideEls[0] as HTMLElement;
+      const pdfW = 297;
+      const pdfH = pdfW / (firstEl.offsetWidth / firstEl.offsetHeight);
+
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [pdfW, pdfH] });
+
+      for (let i = 0; i < slideEls.length; i++) {
+        const el = slideEls[i] as HTMLElement;
+
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.92);
+
+        if (i > 0) pdf.addPage([pdfW, pdfH], "landscape");
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfW, pdfH);
+      }
+
+      pdf.save("제안서_주식회사비오엔_파충류커머스.pdf");
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -77,24 +116,25 @@ export default function SlideViewer() {
           </span>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-dark"
+            disabled={downloading}
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
           >
-            <Download size={14} />
-            PDF 다운로드
+            {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {downloading ? "생성 중…" : "PDF 다운로드"}
           </button>
         </div>
       </div>
 
-      {/* Slides container */}
+      {/* Slides container — horizontal scroll */}
       <div
         ref={containerRef}
-        className="slide-scroll flex-1 snap-y snap-mandatory overflow-y-auto scroll-smooth"
+        className="slide-scroll flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden scroll-smooth"
       >
         {slides.map((slide, i) => (
           <div
             key={slide.id}
             data-slide-index={i}
-            className="flex snap-start snap-always items-center justify-center p-6"
+            className="flex w-full shrink-0 snap-start snap-always items-center justify-center p-6"
             style={{ minHeight: "calc(100dvh - 48px)" }}
           >
             {/* 16:9 landscape card */}
@@ -105,16 +145,16 @@ export default function SlideViewer() {
         ))}
       </div>
 
-      {/* Side nav indicators */}
-      <div className="fixed right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-2 print:hidden">
+      {/* Bottom center indicators */}
+      <div className="fixed bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 print:hidden">
         <button
           onClick={() => scrollTo(current - 1)}
           disabled={current === 0}
           className="rounded-full bg-white/80 p-1 shadow transition-colors hover:bg-white disabled:opacity-30"
         >
-          <ChevronUp size={16} />
+          <ChevronLeft size={16} />
         </button>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5">
           {slides.map((_, i) => (
             <button
               key={i}
@@ -132,7 +172,7 @@ export default function SlideViewer() {
           disabled={current === slides.length - 1}
           className="rounded-full bg-white/80 p-1 shadow transition-colors hover:bg-white disabled:opacity-30"
         >
-          <ChevronDown size={16} />
+          <ChevronRight size={16} />
         </button>
       </div>
     </div>

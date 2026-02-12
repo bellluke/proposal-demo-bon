@@ -1,34 +1,19 @@
 # Handoff - 세션 복원용
 
-## 현재 상태: WBS-01 완료 ✅ / WBS-02 진행 중 ⚠️
+## 현재 상태: WBS-01 완료 ✅ / WBS-02 완료 ✅
 
-## 미해결 이슈: PDF 다운로드 시 1장만 출력됨
+## 해결 완료: PDF 다운로드 ✅
 
-### 문제
-- `/slides` 페이지에서 "PDF 다운로드" 버튼(window.print()) 클릭 시 첫 슬라이드 1장만 PDF에 포함됨
-- 상단 여백도 잘림
+### 해결 방법
+- `window.print()` → **html2canvas + jsPDF** 방식으로 전환
+- 각 `.slide-page` 요소를 html2canvas로 캡처 → jsPDF로 A4 landscape PDF 생성
+- 로딩 상태(Loader2 스피너 + "생성 중…") 표시
+- 불필요했던 `@media print` 슬라이드 관련 CSS 제거 (기본 print:hidden만 유지)
 
-### 원인 분석
-- `SlideViewer.tsx`의 DOM 구조가 print 시 콘텐츠를 잘라냄:
-  1. `.slides-layout` (fixed inset-0) — slides/layout.tsx
-  2. `.slide-outer` (h-[100dvh] flex flex-col) — 뷰어 최외곽
-  3. `.slide-scroll` (flex-1 overflow-y-auto snap-y) — 스크롤 컨테이너
-  4. `[data-slide-index]` (minHeight: calc(100dvh - 48px)) — 슬라이드 래퍼
-  5. `.slide-page` (aspect-[16/9]) — 실제 슬라이드 카드
-- @media print CSS로 position/overflow/height를 해제하는 방식을 시도했으나 불충분
-- `.slides-layout *` 와일드카드 → 내부 flex 레이아웃 깨짐
-- 개별 클래스 타겟팅 (.slide-outer, .slide-scroll) → 여전히 1장만 출력
-
-### 제안하는 해결 방향
-1. **window.print() 포기, html2canvas + jsPDF 사용**: 각 슬라이드를 캔버스로 캡처 후 PDF 생성
-2. **별도 print 전용 페이지**: `/slides/print` 라우트를 만들어 scroll-snap 없이 슬라이드를 단순 나열, 거기서 print
-3. **iframe 방식**: 숨겨진 iframe에 print-friendly HTML을 주입 후 iframe.contentWindow.print()
-
-### 현재 파일 상태
-- `src/app/globals.css` — @media print CSS 있음 (아직 동작 안 함)
-- `src/components/SlideViewer.tsx` — .slide-outer, .slide-scroll 클래스 추가됨
-- `src/app/slides/layout.tsx` — .slides-layout 클래스
-- `docs/slide.md` — 슬라이드 원고 (사용자 검토용, 일자 2026년으로 수정됨)
+### 변경 파일
+- `src/components/SlideViewer.tsx` — html2canvas + jsPDF 동적 import, 로딩 UI
+- `src/app/globals.css` — 슬라이드 전용 @media print 규칙 제거
+- `package.json` — html2canvas, jspdf 의존성 추가
 
 ---
 
@@ -47,7 +32,7 @@
 ### WBS-02: 제안서 슬라이드
 - [x] 1-1. 슬라이드 데이터 구조화 (proposal.md → slides.ts, 10장)
 - [x] 1-2. 슬라이드 뷰어 페이지 (scroll-snap, 16:9 가로, 키보드 nav)
-- [ ] **1-3. PDF 다운로드 — 미해결** ⚠️
+- [x] 1-3. PDF 다운로드 (html2canvas + jsPDF)
 - [x] 2-1. 최종 통합 (Header/홈 링크 추가, 빌드 검증)
 
 ### 추가 수정사항

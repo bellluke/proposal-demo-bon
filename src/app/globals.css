@@ -43,76 +43,11 @@
   }
 }
 
-/* Print styles for slide PDF export */
+/* Print: hide non-content UI */
 @media print {
-  @page {
-    size: A4 landscape;
-    margin: 0;
-  }
-
-  body {
-    background: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
   header,
   footer,
   .print\:hidden {
     display: none !important;
-  }
-
-  /* Unwrap the fixed overlay */
-  .slides-layout {
-    position: static !important;
-    overflow: visible !important;
-    height: auto !important;
-    background: white !important;
-  }
-
-  /* Unwrap the flex column container */
-  .slide-outer {
-    display: block !important;
-    position: static !important;
-    height: auto !important;
-    overflow: visible !important;
-    background: white !important;
-  }
-
-  /* Unwrap the scroll container */
-  .slide-scroll {
-    display: block !important;
-    position: static !important;
-    height: auto !important;
-    overflow: visible !important;
-    scroll-snap-type: none !important;
-  }
-
-  /* Each slide wrapper */
-  [data-slide-index] {
-    display: block !important;
-    min-height: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-
-  /* Each slide card — exact A4 landscape */
-  .slide-page {
-    display: block !important;
-    width: 297mm !important;
-    height: 210mm !important;
-    max-width: none !important;
-    aspect-ratio: auto !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .slide-page:last-child {
-    page-break-after: avoid;
   }
 }

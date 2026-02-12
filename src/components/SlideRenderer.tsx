@@ -136,6 +136,11 @@ function SplitSlide({ slide }: { slide: Slide }) {
   return (
     <div className="flex h-full flex-col justify-center px-12">
       <h2 className="text-3xl font-bold text-text">{slide.title}</h2>
+      {slide.subtitle && (
+        <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+          {slide.subtitle}
+        </p>
+      )}
       <div className="mt-8 grid grid-cols-2 gap-6">
         {/* Left */}
         {slide.left && (
