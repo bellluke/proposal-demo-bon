@@ -11,6 +11,7 @@ const navItems = [
   { href: "/roulette", label: "룰렛" },
   { href: "/attendance", label: "출석체크" },
   { href: "/product-tagging", label: "상품 태깅" },
+  { href: "/slides", label: "슬라이드" },
 ];
 
 export default function Header() {

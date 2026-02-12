@@ -6,6 +6,7 @@ import {
   Dices,
   CalendarCheck,
   Palette,
+  Presentation,
   ShoppingCart,
   Users,
   TrendingUp,
@@ -68,6 +69,12 @@ const demoPages = [
     title: "상품 태깅",
     description: "이미지 좌표 기반 상품 태깅 시스템",
     href: "/product-tagging",
+  },
+  {
+    icon: Presentation,
+    title: "제안서 슬라이드",
+    description: "제안서 전체 내용을 슬라이드로 열람",
+    href: "/slides",
   },
 ];
 
@@ -134,7 +141,7 @@ export default function Home() {
       {/* Demo Pages Grid */}
       <section className="py-12">
         <h2 className="mb-8 text-center text-2xl font-bold">데모 페이지</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {demoPages.map((page) => (
             <Link key={page.title} href={page.href}>
               <Card hover className="text-center">
